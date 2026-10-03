@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en"
+      th:fragment="layout(content)">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="#{label.app.name}">Task Tracker</title>
+
+  <!-- Tailwind CSS (Play CDN — fine for a small local app) -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <!-- Toastify for validation / error notifications -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.css">
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+  <script th:fragment="helpers">
+    // Toastify notification helpers (shared by all pages).
+    function showError(detail) {
+      const message = detail && detail.detail ? detail.detail
+        : (detail && detail.title ? detail.title : JSON.stringify(detail));
+      Toastify({
+        text: message,
+        duration: 4000,
+        close: true,
+        gravity: "top",
+        position: "right",
+        stopOnFocus: true,
+        style: { background: "linear-gradient(to right, #ef4444, #dc2626)" }
+      }).showToast();
+    }
+    function showSuccess(message) {
+      Toastify({
+        text: message,
+        duration: 2500,
+        close: true,
+        gravity: "top",
+        position: "right",
+        style: { background: "linear-gradient(to right, #22c55e, #16a34a)" }
+      }).showToast();
+    }
+  </script>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800">
+
+  <nav class="bg-white shadow sticky top-0 z-10">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/" class="text-xl font-bold text-slate-900" th:text="#{label.app.name}">Task Tracker</a>
+      <div class="flex items-center gap-2 text-sm">
+        <span class="text-slate-500" th:text="#{label.nav.switch_lang}">Language</span>
+        <a href="/?lang=en"
+           class="px-2 py-1 rounded"
+           th:classappend="${#locale.toString().startsWith('de') ? 'bg-slate-200 font-semibold' : 'text-slate-400 hover:text-slate-700'}">EN</a>
+        <a href="/?lang=de"
+           class="px-2 py-1 rounded"
+           th:classappend="${#locale.toString().startsWith('de') ? 'text-slate-400 hover:text-slate-700' : 'bg-slate-200 font-semibold'}">DE</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-5xl mx-auto px-4 py-6"
+        th:if="${content != null}" th:replace="${content}"></main>
+
+</body>
+</html>

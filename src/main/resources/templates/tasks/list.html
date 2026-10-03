@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::main})}">
+
+<main class="max-w-5xl mx-auto px-4 py-6">
+
+  <!-- ── Header row: title + total ─────────────────────────── -->
+  <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+    <h1 class="text-2xl font-bold" th:text="#{label.task.list.title}">Tasks</h1>
+    <div th:with="running=${running}" class="text-right">
+      <div class="text-xs uppercase tracking-wide text-slate-500" th:text="#{label.task.total}">Total tracked time</div>
+      <div class="text-2xl font-mono font-bold text-slate-900 timer-value"
+           id="totalTracked" data-tracked th:data-tracked="${totalTrackedSeconds}">00:00:00</div>
+      <div th:if="${running}"
+           class="text-sm font-mono tabular-nums text-emerald-700"
+           data-elapsed th:data-elapsed-start="${startedIsos[tasks[0].id]}">+ 00:00</div>
+    </div>
+  </div>
+
+  <!-- ── New task form ─────────────────────────────────────── -->
+  <form action="/tasks" method="post"
+        class="bg-white rounded-lg shadow p-4 mb-6 flex flex-col sm:flex-row gap-3">
+    <h2 class="text-lg font-semibold mb-3" th:text="#{label.task.form.title}">New Task</h2>
+    <div class="flex-1">
+      <label for="title" class="block text-sm font-medium mb-1" th:text="#{label.task.title}">Title</label>
+      <input type="text" id="title" name="title" required
+             class="w-full border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+             th:placeholder="#{placeholder.task.title}" placeholder="What are you working on?">
+    </div>
+    <div class="flex items-end">
+      <button type="submit"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-md"
+              th:text="#{button.task.create}">Create Task</button>
+    </div>
+  </form>
+
+  <!-- ── Task list ─────────────────────────────────────────── -->
+  <div th:if="${#lists.isEmpty(tasks)}"
+       class="bg-white rounded-lg shadow p-8 text-center text-slate-500"
+       th:text="#{label.task.none}">No tasks yet.</div>
+
+  <div th:if="${!#lists.isEmpty(tasks)}" class="space-y-3">
+    <div th:each="task : ${tasks}"
+         class="bg-white rounded-lg shadow p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-semibold truncate" th:text="${task.title}">Task title</span>
+          <span class="text-xs px-2 py-0.5 rounded-full"
+                th:if="${task.status.name() == 'TODO'}"
+                th:text="#{label.task.status.todo}"
+                style="background:#e2e8f0;color:#475569;">To do</span>
+          <span class="text-xs px-2 py-0.5 rounded-full"
+                th:if="${task.status.name() == 'DOING'}"
+                th:text="#{label.task.status.doing}"
+                style="background:#dbeafe;color:#1d4ed8;">In progress</span>
+          <span class="text-xs px-2 py-0.5 rounded-full"
+                th:if="${task.status.name() == 'DONE'}"
+                th:text="#{label.task.status.done}"
+                style="background:#dcfce7;color:#15803d;">Done</span>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800"
+                th:if="${task.startedAt != null}"
+                th:text="#{label.task.now}">Live</span>
+        </div>
+      </div>
+
+      <!-- Timer display -->
+      <div class="flex items-center gap-3 sm:w-72">
+        <div class="text-right flex-1">
+          <div class="text-xs text-slate-500" th:text="#{label.task.elapsed}">Elapsed</div>
+          <div class="font-mono text-lg tabular-nums"
+               data-elapsed
+               th:data-elapsed-start="${startedIsos[task.id] == null ? '' : startedIsos[task.id]}">00:00:00</div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-slate-500" th:text="#{label.task.tracked}">Tracked</div>
+          <div class="font-mono text-lg tabular-nums timer-value"
+               data-tracked th:data-tracked="${task.trackedSeconds}">00:00:00</div>
+        </div>
+        <!-- Start / Stop buttons -->
+        <div class="flex flex-col gap-1">
+          <button type="button"
+                  class="btn-start text-sm font-medium px-3 py-1 rounded"
+                  th:attr="data-task-id=${task.id}"
+                  th:classappend="${task.startedAt != null ? 'hidden' : ''}"
+                  style="background:#16a34a;color:#fff"
+                  th:text="#{button.task.start}">Start</button>
+          <button type="button"
+                  class="btn-stop text-sm font-medium px-3 py-1 rounded"
+                  th:attr="data-task-id=${task.id}"
+                  th:classappend="${task.startedAt == null ? 'hidden' : ''}"
+                  style="background:#dc2626;color:#fff"
+                  th:text="#{button.task.stop}">Stop</button>
+        </div>
+      </div>
+
+      <!-- Status select + delete -->
+      <div class="flex items-center gap-2">
+        <form method="post"
+              th:action="@{/tasks/{id}(id=${task.id})}"
+              onsubmit="this.method='PATCH'">
+          <select name="status"
+                  class="border border-slate-300 rounded-md px-2 py-1 text-sm"
+                  th:with="current=${task.status.name()}"
+                  onchange="this.form.submit()">
+            <option value="TODO" th:selected="${current == 'TODO'}" th:text="#{label.task.status.todo}">To do</option>
+            <option value="DOING" th:selected="${current == 'DOING'}" th:text="#{label.task.status.doing}">In progress</option>
+            <option value="DONE" th:selected="${current == 'DONE'}" th:text="#{label.task.status.done}">Done</option>
+          </select>
+        </form>
+        <form method="post" th:action="@{/tasks/{id}/delete(id=${task.id})}"
+              onsubmit="return confirm(L.confirmDelete);">
+          <button type="submit"
+                  class="text-red-600 hover:text-red-800 text-sm underline"
+                  th:text="#{button.task.delete}">Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script th:replace="~{layout/base :: helpers}"></script>
+<script>
+  const LOCALE = [[${#locale.toString()}]];
+  const IS_DE = LOCALE.toLowerCase().startsWith("de");
+  const L = {
+    started: IS_DE ? "Erfassung gestartet" : "Tracking started",
+    stopped: IS_DE ? "Erfassung gestoppt" : "Tracking stopped",
+    confirmDelete: IS_DE ? "Aufgabe wirklich löschen?" : "Really delete this task?"
+  };
+
+  // Format seconds as H:MM:SS.
+  function fmt(totalSeconds) {
+    const s = Math.max(0, Math.floor(totalSeconds));
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+    const p = n => String(n).padStart(2, "0");
+    return h > 0 ? h + ":" + p(m) + ":" + p(sec) : p(m) + ":" + p(sec);
+  }
+
+  // Static tracked values (server-rendered; page reloads after start/stop).
+  document.querySelectorAll("[data-tracked]").forEach(el => {
+    const s = parseInt(el.dataset.tracked || "0", 10);
+    el.textContent = fmt(s);
+    el.title = s + " s";
+  });
+
+  // Live elapsed displays (start time from server render).
+  const elapsedEls = document.querySelectorAll("[data-elapsed]");
+  function tick() {
+    const now = Date.now();
+    elapsedEls.forEach(el => {
+      const startIso = el.dataset.elapsedStart;
+      if (!startIso) { el.textContent = "00:00:00"; return; }
+      el.textContent = fmt((now - new Date(startIso).getTime()) / 1000);
+    });
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  async function callApi(url) {
+    const res = await fetch(url, { method: "POST", headers: { "Accept": "application/json" } });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      showError(body);
+      return null;
+    }
+    return await res.json();
+  }
+
+  document.querySelectorAll(".btn-start").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.taskId;
+      btn.disabled = true;
+      const task = await callApi(`/api/tasks/${id}/start`);
+      if (task) { showSuccess(L.started); window.location.reload(); }
+    });
+  });
+  document.querySelectorAll(".btn-stop").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.taskId;
+      btn.disabled = true;
+      const task = await callApi(`/api/tasks/${id}/stop`);
+      if (task) { showSuccess(L.stopped); window.location.reload(); }
+    });
+  });
+</script>
+</html>

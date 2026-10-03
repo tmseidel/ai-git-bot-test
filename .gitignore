@@ -1,0 +1,11 @@
+target/
+data/
+*.mv.db
+*.trace.db
+*.iml
+.idea/
+*.class
+.recommender/
+.classpath
+.project
+.settings/
