@@ -6,25 +6,28 @@
 
   <!-- ── Header row: title + total ─────────────────────────── -->
   <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
-    <h1 class="text-2xl font-bold" th:text="#{label.task.list.title}">Tasks</h1>
+    <h1 class="text-2xl font-bold dark:text-white" th:text="#{label.task.list.title}">Tasks</h1>
     <div th:with="running=${running}" class="text-right">
-      <div class="text-xs uppercase tracking-wide text-slate-500" th:text="#{label.task.total}">Total tracked time</div>
-      <div class="text-2xl font-mono font-bold text-slate-900 timer-value"
+      <div class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400" th:text="#{label.task.total}">Total tracked time</div>
+      <div class="text-2xl font-mono font-bold text-slate-900 dark:text-white timer-value"
            id="totalTracked" data-tracked th:data-tracked="${totalTrackedSeconds}">00:00:00</div>
       <div th:if="${running}"
-           class="text-sm font-mono tabular-nums text-emerald-700"
+           class="text-sm font-mono tabular-nums text-emerald-700 dark:text-emerald-400"
            data-elapsed th:data-elapsed-start="${startedIsos[tasks[0].id]}">+ 00:00</div>
     </div>
   </div>
 
   <!-- ── New task form ─────────────────────────────────────── -->
   <form action="/tasks" method="post"
-        class="bg-white rounded-lg shadow p-4 mb-6 flex flex-col sm:flex-row gap-3">
-    <h2 class="text-lg font-semibold mb-3" th:text="#{label.task.form.title}">New Task</h2>
+        class="bg-white rounded-lg shadow p-4 mb-6 flex flex-col sm:flex-row gap-3
+               dark:bg-slate-800 dark:shadow-slate-950/50">
+    <h2 class="text-lg font-semibold mb-3 dark:text-slate-100" th:text="#{label.task.form.title}">New Task</h2>
     <div class="flex-1">
-      <label for="title" class="block text-sm font-medium mb-1" th:text="#{label.task.title}">Title</label>
+      <label for="title" class="block text-sm font-medium mb-1 dark:text-slate-300" th:text="#{label.task.title}">Title</label>
       <input type="text" id="title" name="title" required
-             class="w-full border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+             class="w-full border border-slate-300 rounded-md px-3 py-2
+                    bg-white focus:outline-none focus:ring-2 focus:ring-blue-500
+                    dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100"
              th:placeholder="#{placeholder.task.title}" placeholder="What are you working on?">
     </div>
     <div class="flex items-end">
@@ -36,29 +39,32 @@
 
   <!-- ── Task list ─────────────────────────────────────────── -->
   <div th:if="${#lists.isEmpty(tasks)}"
-       class="bg-white rounded-lg shadow p-8 text-center text-slate-500"
+       class="bg-white rounded-lg shadow p-8 text-center text-slate-500
+              dark:bg-slate-800 dark:shadow-slate-950/50 dark:text-slate-400"
        th:text="#{label.task.none}">No tasks yet.</div>
 
   <div th:if="${!#lists.isEmpty(tasks)}" class="space-y-3">
     <div th:each="task : ${tasks}"
-         class="bg-white rounded-lg shadow p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+         class="bg-white rounded-lg shadow p-4 flex flex-col sm:flex-row sm:items-center gap-3
+                dark:bg-slate-800 dark:shadow-slate-950/50">
 
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2 flex-wrap">
           <span class="font-semibold truncate" th:text="${task.title}">Task title</span>
-          <span class="text-xs px-2 py-0.5 rounded-full"
+          <span class="text-xs px-2 py-0.5 rounded-full
+                       bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
                 th:if="${task.status.name() == 'TODO'}"
-                th:text="#{label.task.status.todo}"
-                style="background:#e2e8f0;color:#475569;">To do</span>
-          <span class="text-xs px-2 py-0.5 rounded-full"
+                th:text="#{label.task.status.todo}">To do</span>
+          <span class="text-xs px-2 py-0.5 rounded-full
+                       bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300"
                 th:if="${task.status.name() == 'DOING'}"
-                th:text="#{label.task.status.doing}"
-                style="background:#dbeafe;color:#1d4ed8;">In progress</span>
-          <span class="text-xs px-2 py-0.5 rounded-full"
+                th:text="#{label.task.status.doing}">In progress</span>
+          <span class="text-xs px-2 py-0.5 rounded-full
+                       bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-300"
                 th:if="${task.status.name() == 'DONE'}"
-                th:text="#{label.task.status.done}"
-                style="background:#dcfce7;color:#15803d;">Done</span>
-          <span class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800"
+                th:text="#{label.task.status.done}">Done</span>
+          <span class="text-xs px-2 py-0.5 rounded-full
+                       bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300"
                 th:if="${task.startedAt != null}"
                 th:text="#{label.task.now}">Live</span>
         </div>
@@ -67,13 +73,13 @@
       <!-- Timer display -->
       <div class="flex items-center gap-3 sm:w-72">
         <div class="text-right flex-1">
-          <div class="text-xs text-slate-500" th:text="#{label.task.elapsed}">Elapsed</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400" th:text="#{label.task.elapsed}">Elapsed</div>
           <div class="font-mono text-lg tabular-nums"
                data-elapsed
                th:data-elapsed-start="${startedIsos[task.id] == null ? '' : startedIsos[task.id]}">00:00:00</div>
         </div>
         <div class="text-right">
-          <div class="text-xs text-slate-500" th:text="#{label.task.tracked}">Tracked</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400" th:text="#{label.task.tracked}">Tracked</div>
           <div class="font-mono text-lg tabular-nums timer-value"
                data-tracked th:data-tracked="${task.trackedSeconds}">00:00:00</div>
         </div>
@@ -100,7 +106,8 @@
               th:action="@{/tasks/{id}(id=${task.id})}"
               onsubmit="this.method='PATCH'">
           <select name="status"
-                  class="border border-slate-300 rounded-md px-2 py-1 text-sm"
+                  class="border border-slate-300 rounded-md px-2 py-1 text-sm
+                         bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100"
                   th:with="current=${task.status.name()}"
                   onchange="this.form.submit()">
             <option value="TODO" th:selected="${current == 'TODO'}" th:text="#{label.task.status.todo}">To do</option>
@@ -111,7 +118,7 @@
         <form method="post" th:action="@{/tasks/{id}/delete(id=${task.id})}"
               onsubmit="return confirm(L.confirmDelete);">
           <button type="submit"
-                  class="text-red-600 hover:text-red-800 text-sm underline"
+                  class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm underline"
                   th:text="#{button.task.delete}">Delete</button>
         </form>
       </div>
@@ -121,6 +128,7 @@
 </main>
 
 <script th:replace="~{layout/base :: helpers}"></script>
+<script th:replace="~{layout/base :: theme}"></script>
 <script>
   const LOCALE = [[${#locale.toString()}]];
   const IS_DE = LOCALE.toLowerCase().startsWith("de");

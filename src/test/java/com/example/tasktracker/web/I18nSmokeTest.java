@@ -65,6 +65,34 @@ class I18nSmokeTest {
     }
 
     @Test
+    @DisplayName("GET /: renders the theme switcher next to the language switch")
+    void index_themeSwitcher() throws Exception {
+        var result = mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andReturn();
+        String html = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertThat(html)
+                .contains("id=\"theme-toggle\"")
+                .contains("theme-icon-sun")
+                .contains("theme-icon-moon");
+        // Dark mode is class-based (Tailwind v4 custom variant), cookie-backed.
+        assertThat(html)
+                .contains("@custom-variant dark")
+                .contains("prefers-color-scheme: dark")
+                .contains("document.cookie");
+    }
+
+    @Test
+    @DisplayName("GET /?lang=de: theme switcher is localized (Thema)")
+    void index_german_themeSwitcher() throws Exception {
+        var result = mockMvc.perform(get("/").param("lang", "de"))
+                .andExpect(status().isOk())
+                .andReturn();
+        String html = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertThat(html).contains("title=\"Thema\"");
+    }
+
+    @Test
     @DisplayName("Full round trip: create task, start, stop, verify duration")
     void roundTrip_createStartStop() throws Exception {
         // Create a task via the form (PRG).
